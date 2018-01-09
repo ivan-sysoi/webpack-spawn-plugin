@@ -1,7 +1,7 @@
 // @flow
 import spawn from 'cross-spawn'
 import taskkill from 'taskkill'
-import fkill from 'fkill'
+import treeKill from 'treekill'
 
 type Options = {
   when: string,
@@ -11,7 +11,16 @@ type Options = {
 const kill = pid => (
   process.platform === 'win32'
     ? taskkill(pid, { force: true, tree: true })
-    : fkill(pid)
+    : new Promise((resolve, reject) => {
+      treeKill(pid, 'SIGKILL', (err) => {
+        if (err) {
+          reject(err);
+        }
+        else {
+          resolve(null);
+        }
+      });
+    })
 )
 
 class SpawnPlugin {
